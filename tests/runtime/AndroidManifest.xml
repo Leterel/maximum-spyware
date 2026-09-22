@@ -1,0 +1,5 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="de.leterel.prototypeqa">
+    <uses-sdk android:minSdkVersion="26" android:targetSdkVersion="35" />
+    <application android:label="Local prototype QA" android:allowBackup="false" />
+    <instrumentation android:name=".UiProbe" android:targetPackage="de.leterel.prototypeqa" />
+</manifest>
