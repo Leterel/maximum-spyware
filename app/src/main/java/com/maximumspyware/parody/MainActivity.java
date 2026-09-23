@@ -86,14 +86,27 @@ public final class MainActivity extends Activity {
         Dashboard() {
             super(MainActivity.this); setFillViewport(true); setBackgroundColor(INK);
             LinearLayout root = column(); root.setPadding(dp(20),dp(20),dp(20),dp(28)); addView(root);
-            LinearLayout head = row(); weighted(head,text("MAXIMUM\nSPYWARE",20,PAPER,true),0); head.addView(text("● SIMULATION",11,LIME,true)); add(root,head,0);
+            // Give large accessibility text the full width instead of squeezing
+            // the title between a weighted column and the simulation disclosure.
+            boolean stack = getResources().getConfiguration().screenWidthDp
+                    / getResources().getConfiguration().fontScale < 360;
+            LinearLayout head = stack ? column() : row();
+            TextView title = text("MAXIMUM\nSPYWARE",20,PAPER,true);
+            TextView disclosure = text("● SIMULATION",11,LIME,true);
+            if (stack) { add(head,title,0); add(head,disclosure,10); }
+            else { weighted(head,title,0); head.addView(disclosure); }
+            add(root,head,0);
             session=text("",10,MUTED,true); add(root,session,25);
             stage=text("",29,PAPER,true); add(root,stage,16);
             LinearLayout scan=panel(); add(root,scan,18); radar=new RadarView(); addHeight(scan,radar,0,210);
             progress=text("0%",25,LIME,true); progress.setGravity(Gravity.END); add(scan,progress,8);
             add(scan,text("IMAGINÄRER TIEFENSCAN",10,MUTED,true),5);
-            LinearLayout metrics=row(); weighted(metrics,metric("ECHTE DATEN","0"),0); weighted(metrics,metric("UPLOAD","0 B"),8);
-            LinearLayout dramaBox=panel(); add(dramaBox,text("DRAMA",9,MUTED,true),0); drama=text("0%",23,LIME,true); add(dramaBox,drama,9); weighted(metrics,dramaBox,8); add(root,metrics,16);
+            LinearLayout metrics=stack ? column() : row();
+            LinearLayout dataBox=metric("ECHTE DATEN","0"), uploadBox=metric("UPLOAD","0 B");
+            LinearLayout dramaBox=panel(); add(dramaBox,text("DRAMA",9,MUTED,true),0); drama=text("0%",23,LIME,true); add(dramaBox,drama,9);
+            if (stack) { add(metrics,dataBox,0); add(metrics,uploadBox,8); add(metrics,dramaBox,8); }
+            else { weighted(metrics,dataBox,0); weighted(metrics,uploadBox,8); weighted(metrics,dramaBox,8); }
+            add(root,metrics,16);
             terminal=text("",12,LIME,false); terminal.setTypeface(android.graphics.Typeface.MONOSPACE); add(root,terminal,22);
             report=button("MEINEN FAKE-BERICHT ANSEHEN →"); report.setOnClickListener(v -> { state.showReport(); refresh(); smoothScrollTo(0,0); }); add(root,report,18);
             pause=button("PAUSE"); pause.setOnClickListener(v -> { state.togglePause(SystemClock.elapsedRealtime()); refresh(); }); add(root,pause,12);

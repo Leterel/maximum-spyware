@@ -1,5 +1,23 @@
 # Fortschritt
 
+## 2026-09-23 abends — 0.2.1 und erweiterte Emulatormatrix
+
+- Bei schmalen Displays/großer Schrift stehen Titel und Simulationshinweis jetzt
+  untereinander. Die drei Kennzahlen bekommen ebenfalls volle Breite, statt
+  durch große Schrift in schmale Spalten gedrängt zu werden.
+- Neue APK 0.2.1 mit bisherigem lokalem Entwicklungsschlüssel gebaut.
+  Produktionszustand 3.797/3.797; V2/V3-Signatur und Alignment bestanden;
+  Manifest weiterhin ohne Berechtigungen.
+- Vier API-34-Layouts: 411-dp-Handy, 320 dp mit 200 % Schrift, Querformat und
+  800-dp-Tablet. Bericht und zweiter Scan erreichbar; echte Rotation geprüft.
+- 13 Matrixprüfungen bestanden. Screenshots/Hierarchien/JSON als Release-Belege;
+  Darstellung bei großer Schrift zusätzlich visuell geprüft.
+- Nur Emulator verwendet. Hintergrund/Rotation während Pause sind hier nicht
+  als neuer UI-Lauf behauptet; dafür gelten die Produktionszustandstests.
+- Details und Prüfsumme: EMULATOR-VERIFICATION.md. Alte Version bleibt verfügbar.
+
+Die folgenden Notizen betreffen den älteren Stand 0.2.0.
+
 ## 2026-09-23 — Prototyp 0.2.0 geprüft und gesichert
 
 - Native, offline reproduzierbare Android-APK mit Disclaimer und Fake-

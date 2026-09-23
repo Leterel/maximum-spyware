@@ -4,7 +4,7 @@ Satirical Android app parodying surveillance capitalism.
 
 **This app collects nothing.** All surveillance UI is fake/local.
 
-## Milestone 0.2
+## Milestone 0.2.1
 
 - Giant dystopian disclaimer screen
 - German disclosure and "OKAY, SPIONIER MICH FAKE AUS" button
@@ -12,6 +12,7 @@ Satirical Android app parodying surveillance capitalism.
 - Animated local radar, fake terminal timeline, pause/restart and fake report
 - No INTERNET permission
 - No analytics, ads, or tracking SDKs
+- Header and metric cards stack on narrow displays or with large accessibility text
 
 ## Build
 
@@ -25,7 +26,7 @@ From the project root on Windows:
 ./build-native.ps1 -SdkPath C:\Android\Sdk -JavaHome "C:\Program Files\Eclipse Adoptium\jdk-21"
 ```
 
-APK output: `build/outputs/maximum-spyware-0.2.0.apk` (the deliverable copy is
+APK output: `build/outputs/maximum-spyware-0.2.1.apk` (the deliverable copy is
 in `outputs/maximum-spyware/`).
 
 ## Requirements
@@ -40,10 +41,10 @@ signature and alignment. See [PROGRESS.md](PROGRESS.md) for the actual test scop
 
 ## Install and use
 
-[Download APK](https://github.com/Leterel/maximum-spyware/releases/tag/v0.2.0)
+[Download APK](https://github.com/Leterel/maximum-spyware/releases/tag/v0.2.1)
 (private repository; GitHub sign-in required).
 
-Copy `maximum-spyware-0.2.0.apk` to an Android 8.0+ device and open it. Allow
+Copy `maximum-spyware-0.2.1.apk` to an Android 8.0+ device and open it. Allow
 installation from your file manager if Android asks. Launch **MAXIMUM SPYWARE**,
 read the simulation disclosure and tap the green button. The invented scan
 takes 22 seconds of foreground time. Pause freezes it; **NEUER SCAN** resets
@@ -57,8 +58,13 @@ fiction and the UI labels it as a simulation.
 
 ## Verified prototype
 
-On 2026-09-23, all 3,797 production-state assertions passed, and the delivered
-APK passed V2/V3 signature verification and alignment checks. Its manifest
-requests no permissions. API-34 emulator evidence from 2026-09-21 covers the
-completed scan, fake report and new scan. Installation on a Pixel 10a succeeded
-on 2026-09-23; physical-device UI and lifecycle tests remain open.
+On 2026-09-23, all 3,797 production-state assertions passed, and the 0.2.1 APK
+passed V2/V3 signature verification and alignment checks. Its manifest requests
+no permissions. The expanded API-34 emulator matrix covers phone, small screen
+with 200% text, landscape and tablet display configurations. Completed report,
+new scan and actual rotation passed in every layout (13 automated checks).
+
+See [EMULATOR-VERIFICATION.md](EMULATOR-VERIFICATION.md) for evidence and the
+emulator-only test command. These are four display configurations on one system
+image, not four devices. Background/paused-rotation behavior has production-state
+test coverage but was not retested end to end in this matrix.
