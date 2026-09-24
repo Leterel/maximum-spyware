@@ -66,5 +66,8 @@ new scan and actual rotation passed in every layout (13 automated checks).
 
 See [EMULATOR-VERIFICATION.md](EMULATOR-VERIFICATION.md) for evidence and the
 emulator-only test command. These are four display configurations on one system
-image, not four devices. Background/paused-rotation behavior has production-state
-test coverage but was not retested end to end in this matrix.
+image, not four devices. A separate real UI lifecycle run on the same unchanged
+APK passed all 13 checks: pause/resume, 25 seconds in the background, rotation
+while paused, report and restart. See [LIFECYCLE-VERIFICATION.md](LIFECYCLE-VERIFICATION.md)
+and the [emulator-only lifecycle runner](tests/runtime/README.md). Process death,
+manufacturer background restrictions and other Android versions remain untested.

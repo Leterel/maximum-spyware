@@ -23,8 +23,10 @@ ohne angeforderte Berechtigungen geprüft.
 
 Alle vier Displaykonfigurationen laufen auf **einem API-34-Emulator**. Der Test
 ersetzt keine Android-Versionsmatrix, Hersteller-, Foldable- oder Tablet-Hardware-
-Prüfung. Pause/Hintergrund und Zustandswiederherstellung haben Unit-Test-Abdeckung,
-wurden in dieser UI-Matrix jedoch nicht erneut automatisiert durchlaufen.
+Prüfung. Pause/Hintergrund und Zustandswiederherstellung wurden später separat
+mit der echten UI geprüft: 13/13 zusätzliche Prüfungen bestanden, einschließlich
+25 Sekunden im Hintergrund und Rotation während Pause. Siehe
+[LIFECYCLE-VERIFICATION.md](LIFECYCLE-VERIFICATION.md).
 
 ## Wiederholen
 

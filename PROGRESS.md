@@ -1,5 +1,18 @@
 # Fortschritt
 
+## 2026-09-23, 23:39 — Lebenszyklus der echten UI geprüft
+
+- Separater, emulatorgeschützter Instrumentation-Helfer bedient die originale
+  APK über Accessibility und umgeht UIAutomators Idle-Warteproblem bei Animationen.
+- 13/13 echte UI-Prüfungen: Pause, drei Sekunden Stillstand, Rotation während
+  Pause, Weiter, 25.001 ms Hintergrund, Bericht und neuer Scan in Sitzung 2.
+- Pause/Rotation blieben bei 2 %. Nach Weiter 9 %, nach 25 Sekunden Hintergrund
+  erst 10 %. Anschließend Bericht bei 100 % und neuer Scan bei 1 %.
+- Keine Änderung an Produktionscode oder APK notwendig. Testhelfer entfernt,
+  Emulatoreinstellungen wiederhergestellt. Kein physisches Gerät verwendet.
+- Belege und Grenzen: LIFECYCLE-VERIFICATION.md; reproduzierbare Befehle unter
+  tests/runtime/README.md. Weitere Android-Versionen und Prozessverlust offen.
+
 ## 2026-09-23 abends — 0.2.1 und erweiterte Emulatormatrix
 
 - Bei schmalen Displays/großer Schrift stehen Titel und Simulationshinweis jetzt
