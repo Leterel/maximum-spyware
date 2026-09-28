@@ -69,5 +69,12 @@ emulator-only test command. These are four display configurations on one system
 image, not four devices. A separate real UI lifecycle run on the same unchanged
 APK passed all 13 checks: pause/resume, 25 seconds in the background, rotation
 while paused, report and restart. See [LIFECYCLE-VERIFICATION.md](LIFECYCLE-VERIFICATION.md)
-and the [emulator-only lifecycle runner](tests/runtime/README.md). Process death,
-manufacturer background restrictions and other Android versions remain untested.
+and the [emulator-only lifecycle runner](tests/runtime/README.md).
+
+On 2026-09-25, a separate 27-check process-death scenario passed on the unchanged
+APK: Android killed its background process and the normal launcher recreated it
+with a different PID. A paused scan, running scan and completed report all kept
+their state and session; a new scan after restoration worked. See
+[PROCESS-DEATH-VERIFICATION.md](PROCESS-DEATH-VERIFICATION.md). Actual low-memory
+pressure, reboots, manufacturer background restrictions and other Android
+versions remain untested.

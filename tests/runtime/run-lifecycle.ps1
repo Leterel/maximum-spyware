@@ -2,13 +2,14 @@ param(
     [Parameter(Mandatory=$true)][ValidatePattern('^emulator-[0-9]+$')][string]$Serial,
     [Parameter(Mandatory=$true)][string]$AdbPath,
     [Parameter(Mandatory=$true)][string]$ApkPath,
+    [ValidateSet('lifecycle','process-death')][string]$Scenario='lifecycle',
     [string]$OutputDirectory
 )
 $ErrorActionPreference='Stop'
 Set-StrictMode -Version Latest
 $repo=[IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\..'))
 $build=Join-Path $repo 'build'
-if(!$OutputDirectory){$OutputDirectory=Join-Path $build ('lifecycle-'+(Get-Date -Format 'yyyyMMdd-HHmmss'))}
+if(!$OutputDirectory){$OutputDirectory=Join-Path $build ($Scenario+'-'+(Get-Date -Format 'yyyyMMdd-HHmmss'))}
 $OutputDirectory=[IO.Path]::GetFullPath($OutputDirectory)
 if(!$OutputDirectory.StartsWith($build+[IO.Path]::DirectorySeparatorChar)){throw 'Evidence must stay beneath this project build directory'}
 New-Item -ItemType Directory -Force -Path $OutputDirectory | Out-Null
@@ -41,18 +42,18 @@ try {
     $installed=$true
     # Clear only the separate test helper to prevent stale results after a failed run.
     Adb @('shell','pm','clear','de.leterel.prototypeqa') | Out-Null
-    Adb @('shell','am','instrument','-w','de.leterel.prototypeqa/.UiProbe') |
+    Adb @('shell','am','instrument','-w','-e','scenario',$Scenario,'de.leterel.prototypeqa/.UiProbe') |
         Tee-Object -FilePath (Join-Path $OutputDirectory 'instrumentation.log')
-    Adb @('pull','/sdcard/Android/data/de.leterel.prototypeqa/files/lifecycle',$OutputDirectory) | Out-Null
-    $result=Get-Content -LiteralPath (Join-Path $OutputDirectory 'lifecycle\lifecycle-results.json') -Raw | ConvertFrom-Json
+    Adb @('pull',('/sdcard/Android/data/de.leterel.prototypeqa/files/'+$Scenario),$OutputDirectory) | Out-Null
+    $result=Get-Content -LiteralPath (Join-Path $OutputDirectory ($Scenario+'\'+$Scenario+'-results.json')) -Raw | ConvertFrom-Json
     [ordered]@{
         testedAt=(Get-Date).ToString('o');serial=$Serial;api=$result.api;
         apk=(Split-Path $ApkPath -Leaf);sha256=(Get-FileHash -LiteralPath $ApkPath -Algorithm SHA256).Hash;
-        status=$result.status;checks=@($result.checks).Count;
+        scenario=$Scenario;status=$result.status;checks=@($result.checks).Count;
         scope="Real UI on one API-$($result.api) Android emulator; no physical devices; original production APK";
     } | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $OutputDirectory 'verification.json') -Encoding utf8
-    if($result.status -ne 'passed'){throw "Lifecycle test failed: $($result.error)"}
-    Write-Output "PASS: $(@($result.checks).Count) lifecycle checks; evidence in $OutputDirectory"
+    if($result.status -ne 'passed'){throw "$Scenario test failed: $($result.error)"}
+    Write-Output "PASS: $(@($result.checks).Count) $Scenario checks; evidence in $OutputDirectory"
 } finally {
     Adb @('shell','wm','fixed-to-user-rotation',$oldFixed) | Out-Null
     if($oldRotation -match '^lock (\d)$'){Adb @('shell','wm','user-rotation','lock',$Matches[1])|Out-Null}

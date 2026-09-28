@@ -1,5 +1,40 @@
 # Fortschritt
 
+## 2026-09-28 — Teständerungen und Auslieferungspaket geprüft
+
+- Die neuen Prozessverlust-Prüfungen bedienen ausschließlich die Produktions-UI;
+  sie prüfen echte PID-Wechsel, exakt wiederhergestellten Pausenstand und den
+  erhaltenen Sitzungszähler. Der Emulator-Schutz bleibt im Runner und Helper aktiv.
+- Alle 27 Prüfergebnisse und acht Screenshots des Laufs vom 25.09. sind im
+  Prüfpaket enthalten. Die Originaldateien wurden erneut hashgleich abgeglichen.
+- APK 0.2.1 bleibt unverändert; es wurde weder neu gebaut noch ein Emulator
+  gestartet. Neue datierte Prüfsummen kennzeichnen nur das ergänzte Belegpaket.
+
+## 2026-09-27 — Prozessverlust-Belege für die Auslieferung gesichert
+
+- Die Originalbelege vom 25.09. erneut geprüft: 27/27 Detailprüfungen bestanden,
+  acht Screenshots und drei echte Prozesswechsel vorhanden.
+- Elf Originaldateien hashgleich in das gemeinsame Auslieferungsverzeichnis
+  `outputs/maximum-spyware/process-death-verification-20260925/` kopiert.
+- Der Hash der ausgelieferten APK 0.2.1 entspricht weiterhin dem geprüften Build.
+  Keine neue APK und kein erneuter Prozessverlust-Test am 27.09. behauptet.
+- Details: PROCESS-DEATH-VERIFICATION.md.
+
+## 2026-09-25, 23:53 — Prozessverlust auf dem Emulator geprüft
+
+- Neuer wiederholbarer Black-box-Test beendet die echte App dreimal im Hintergrund
+  mit Androids `am kill`. Fehlende PID und andere PID nach Launcher-Rückkehr belegen
+  die tatsächliche Prozessneuerstellung; kein Produktions-Testmodus.
+- 27/27 Prüfungen: Sitzung 2 pausiert bei 11 % bleibt exakt erhalten, Weiter
+  funktioniert, laufender Scan zählt tote Zeit nicht mit, fertiger Bericht bleibt
+  bei 100 %, neuer Scan startet anschließend in Sitzung 3.
+- Unveränderte APK 0.2.1 getestet. Keine Produktionsänderung nötig; keine
+  physischen Geräte verwendet. Runner stellt Emulatoreinstellungen wieder her
+  und entfernt den Testhelfer.
+- Belege, PIDs, Grenzen und Wiederholung: PROCESS-DEATH-VERIFICATION.md und
+  tests/runtime/README.md. API-34-Emulator; echter Speichermangel, Neustart und
+  herstellerspezifische Hintergrundregeln bleiben offen.
+
 ## 2026-09-23, 23:39 — Lebenszyklus der echten UI geprüft
 
 - Separater, emulatorgeschützter Instrumentation-Helfer bedient die originale

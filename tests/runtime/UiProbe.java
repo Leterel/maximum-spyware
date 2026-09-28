@@ -21,8 +21,13 @@ public final class UiProbe extends Instrumentation {
     private final JSONArray checks = new JSONArray(), snapshots = new JSONArray();
     private UiAutomation ui;
     private File evidence;
+    private String scenario = "lifecycle";
 
-    @Override public void onCreate(Bundle args) { super.onCreate(args); start(); }
+    @Override public void onCreate(Bundle args) {
+        super.onCreate(args);
+        if (args != null) scenario = args.getString("scenario", "lifecycle");
+        start();
+    }
     @Override public void onStart() {
         Bundle bundle = new Bundle(); int exit = 1;
         try {
@@ -30,22 +35,105 @@ public final class UiProbe extends Instrumentation {
             // A second guard protects against someone launching the helper directly.
             if (!"1".equals(shellRaw("getprop ro.kernel.qemu").trim()))
                 throw new IllegalStateException("Refusing to operate outside an Android emulator");
-            evidence = new File(getContext().getExternalFilesDir(null), "lifecycle");
+            if (!"lifecycle".equals(scenario) && !"process-death".equals(scenario))
+                throw new IllegalArgumentException("Unknown scenario: " + scenario);
+            evidence = new File(getContext().getExternalFilesDir(null), scenario);
             if (!evidence.isDirectory() && !evidence.mkdirs()) throw new IllegalStateException("No evidence directory");
             result.put("api", android.os.Build.VERSION.SDK_INT);
-            result.put("test", "maximum-spyware black-box lifecycle");
-            runScenario(); result.put("status", "passed"); exit = 0;
+            result.put("test", "maximum-spyware black-box " + scenario);
+            if ("process-death".equals(scenario)) runProcessDeath(); else runScenario();
+            result.put("status", "passed"); exit = 0;
         } catch (Exception error) {
             try { result.put("status", "failed"); result.put("error", error.toString()); result.put("stack", android.util.Log.getStackTraceString(error)); }
             catch (Exception ignored) { }
         } finally {
             try {
                 result.put("checks", checks); result.put("snapshots", snapshots);
-                if (evidence != null) write(new File(evidence, "lifecycle-results.json"), result.toString(2));
+                if (evidence != null) write(new File(evidence, scenario + "-results.json"), result.toString(2));
                 bundle.putString("result", result.toString());
             } catch (Exception error) { bundle.putString("error", error.toString()); exit = 1; }
             finish(exit, bundle);
         }
+    }
+
+    private void launchFromLauncher() throws Exception {
+        shell("am start -W -a android.intent.action.MAIN -c android.intent.category.LAUNCHER -n "
+                + APP + "/.MainActivity");
+    }
+    private void runProcessDeath() throws Exception {
+        // This initial force-stop creates a clean launch only. Every tested death below
+        // uses am kill on a background process, retaining Android's activity task/state.
+        shell("am force-stop " + APP);
+        launchFromLauncher();
+        click("OKAY, SPIONIER MICH FAKE AUS →");
+        click("NEUER SCAN"); SystemClock.sleep(2000); click("PAUSE");
+        JSONObject paused = snapshot("01-session-2-paused");
+        int pausedPercent = paused.getInt("progressPercent");
+        check(pausedPercent > 0 && pausedPercent < 100 && has("LOKALES THEATER / SITZUNG 2"),
+                "Nondefault session and nonzero scan progress established");
+        check(has("SPIONAGE MACHT PAUSE."), "Scan is paused before process death");
+        killBackgroundAndRestore("paused");
+        JSONObject restored = snapshot("02-paused-restored");
+        check(restored.getInt("progressPercent") == pausedPercent && has("LOKALES THEATER / SITZUNG 2"),
+                "Process recreation preserves exact paused progress and session 2");
+        check(has("SPIONAGE MACHT PAUSE."), "Paused state survives process recreation");
+        SystemClock.sleep(2000);
+        check(snapshot("03-restored-still-paused").getInt("progressPercent") == pausedPercent,
+                "Restored pause remains frozen for two seconds");
+
+        click("WEITER"); SystemClock.sleep(1200); click("PAUSE");
+        int runningCheckpoint = snapshot("04-before-running-death").getInt("progressPercent");
+        check(runningCheckpoint > pausedPercent && runningCheckpoint < 85,
+                "Restored scan continues before the running-state death test");
+        click("WEITER");
+        killBackgroundAndRestore("running");
+        check(has("PAUSE") && !has("SPIONAGE MACHT PAUSE."),
+                "A running scan is restored running instead of paused or reset");
+        click("PAUSE");
+        int returnedPercent = snapshot("05-running-restored").getInt("progressPercent");
+        check(returnedPercent >= runningCheckpoint && returnedPercent - runningCheckpoint <= 20,
+                "Recreated running scan excludes dead time (at most 4.4 seconds foreground overhead)");
+        check(has("LOKALES THEATER / SITZUNG 2"), "Running-state recreation preserves session 2");
+
+        click("WEITER"); SystemClock.sleep(23000);
+        click("MEINEN FAKE-BERICHT ANSEHEN →");
+        snapshot("06-report-before-death");
+        check(has("WIR HABEN\nNICHTS GEGEN DICH."), "Scan completes and enters the real report");
+        killBackgroundAndRestore("report");
+        JSONObject report = snapshot("07-report-restored");
+        check(report.getInt("progressPercent") == 100 && has("WIR HABEN\nNICHTS GEGEN DICH.")
+                && has("LOKALES THEATER / SITZUNG 2"), "Completed report survives a third process recreation");
+        click("NEUER SCAN"); click("PAUSE");
+        JSONObject restarted = snapshot("08-restarted-after-restored-report");
+        check(restarted.getInt("progressPercent") < 20 && has("LOKALES THEATER / SITZUNG 3")
+                && has("SPIONAGE MACHT PAUSE."), "Restored report starts a working scan in session 3");
+    }
+    private void killBackgroundAndRestore(String label) throws Exception {
+        String oldPid = shell("pidof " + APP).trim();
+        check(oldPid.matches("[0-9]+"), label + ": one real production process exists");
+        shell("input keyevent KEYCODE_HOME");
+        SystemClock.sleep(1500); // Allow onStop/onSaveInstanceState to finish normally.
+        AccessibilityNodeInfo background = ui.getRootInActiveWindow();
+        check(background != null && !APP.contentEquals(background.getPackageName()),
+                label + ": app is genuinely in the background before am kill");
+        shell("am kill " + APP);
+        String livePid = oldPid;
+        for (int attempt = 0; attempt < 40; attempt++) {
+            livePid = shell("pidof " + APP).trim();
+            if (livePid.isEmpty()) break;
+            SystemClock.sleep(100);
+        }
+        check(livePid.isEmpty(), label + ": production process is absent after am kill");
+        long deadStart = SystemClock.elapsedRealtime();
+        SystemClock.sleep(5000);
+        check(shell("pidof " + APP).trim().isEmpty(), label + ": process remains dead for five seconds");
+        long deadMs = SystemClock.elapsedRealtime() - deadStart;
+        launchFromLauncher(); root();
+        String newPid = shell("pidof " + APP).trim();
+        check(newPid.matches("[0-9]+") && !oldPid.equals(newPid), label + ": relaunch creates a different process");
+        JSONObject death = new JSONObject(); death.put("oldPid", oldPid); death.put("newPid", newPid);
+        death.put("deadWaitMs", deadMs); death.put("method", "am kill while background; normal launcher resume");
+        result.put(label + "ProcessRecreation", death);
     }
 
     private void runScenario() throws Exception {

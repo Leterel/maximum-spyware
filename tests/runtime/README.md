@@ -1,4 +1,4 @@
-# Emulator lifecycle test
+# Emulator lifecycle and process-death tests
 
 This helper exercises the installed production APK through Android accessibility
 actions. It does not call `FakeScanState` directly, inject application state, or
@@ -20,6 +20,11 @@ plus a booted Android emulator. From the repository root:
 ./tests/runtime/run-lifecycle.ps1 -Serial emulator-5570 `
   -AdbPath C:\Android\Sdk\platform-tools\adb.exe `
   -ApkPath ./build/outputs/maximum-spyware-0.2.1.apk
+
+# Reuse the helper to exercise real Android process recreation:
+./tests/runtime/run-lifecycle.ps1 -Serial emulator-5570 `
+  -AdbPath C:\Android\Sdk\platform-tools\adb.exe `
+  -ApkPath ./build/outputs/maximum-spyware-0.2.1.apk -Scenario process-death
 ```
 
 The runner rejects non-`emulator-*` serials and checks `ro.kernel.qemu=1` before
@@ -39,5 +44,19 @@ by foreground transitions. Screenshot dimensions verify actual landscape.
 
 JSON, instrumentation output and seven emulator screenshots are written under
 `build/lifecycle-<timestamp>/`. Failed assertions produce a nonzero runner exit.
-This is one emulator lifecycle scenario. It does not test process death,
-manufacturer background restrictions or multiple Android versions.
+
+The separate `process-death` scenario enters session 2 with nonzero progress,
+moves the real app to the background, calls Android's `am kill` and checks that
+its process is absent. After five seconds it resumes the existing task through
+the normal launcher intent and requires a different process ID. It repeats this
+for a paused scan, a running scan and a completed report. Assertions cover exact
+paused progress, pause/continue, excluded dead time, the restored report and a
+working new scan in session 3. Eight screenshots, process IDs and JSON assertions
+go under `build/process-death-<timestamp>/`.
+
+`am force-stop` is used only to establish each test's initial clean launch; it is
+not used to simulate the tested deaths. The separate helper remains alive while
+the production app dies, and no production state is injected. These scenarios
+cover one emulator image. They do not reproduce actual low-memory pressure,
+device reboot, force-stop persistence, manufacturer background restrictions or
+other Android versions.
