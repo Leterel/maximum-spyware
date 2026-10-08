@@ -25,3 +25,13 @@ Bundle-Konfiguration, Manifest, DEX und Ressourcen im Archiv geprüft.
 Jarsigner bestätigt: unsigniert. Noch offen: bundletool-Validierung, aus dem AAB
 erzeugte APKs im Emulator testen, aktuelle Play-Ziel-API prüfen, Produktionssignatur,
 Werbe-/Consent-Integration und Store-Unterlagen. Kein physisches Gerät verwendet.
+
+## Bundletool-Prüfung am 08.10.2026
+
+Offizielles bundletool-all 1.18.3: validate bestanden, lokal testsignierte APKs
+erzeugt, im API-34-Emulator emulator-5570 installiert und gestartet. Sichtbarer
+Simulationshinweis erkannt; kein fataler App-Fehler im geprüften Logausschnitt.
+Die oben offene Bundletool-/Emulator-Startprüfung ist damit erledigt. Dies ist
+kein neuer vollständiger Scan-/Lebenszykluslauf und keine Produktionssignierung.
+Belege: outputs/maximum-spyware/aab-verification-20261008-pass2 im Workspace.
+Runner: tests/test-app-bundle.ps1 mit explizitem Emulator und QEMU-Prüfung.
