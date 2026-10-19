@@ -42,7 +42,7 @@ signature and alignment. See [PROGRESS.md](PROGRESS.md) for the actual test scop
 ## Install and use
 
 [Download APK](https://github.com/Leterel/maximum-spyware/releases/tag/v0.2.1)
-(private repository; GitHub sign-in required).
+(public repository).
 
 Copy `maximum-spyware-0.2.1.apk` to an Android 8.0+ device and open it. Allow
 installation from your file manager if Android asks. Launch **MAXIMUM SPYWARE**,
