@@ -1,5 +1,24 @@
 # Android-App-Bundle — 07.10.2026
 
+## Automatisierter Offline-Build — 19.10.2026
+
+`build-bundle.ps1` nimmt `SdkPath`, `JavaHome`, `GradleCache`, `AndroidUserHome`,
+`BundleToolJar` und einen neuen `OutputDirectory` entgegen. Standard ist offline;
+`-Online` erlaubt das Nachladen fehlender Abhängigkeiten. Das Skript stellt
+Prozess-Umgebungsvariablen wieder her, prüft Paketname, Bundle-Inhalt und fehlende
+Signatur und validiert mit bundletool. Ausgabe: `app-release-unsigned.aab`,
+Prüfsumme und Protokolle im neuen Ausgabeordner.
+
+Offline-Build und fünf Schutzprüfungen bestanden: ungültige Paketnamen, fremde
+Signierschlüssel, physische Geräteseriennummern und vorhandene Belegordner werden
+abgelehnt. Der fest hinterlegte lokale Entwicklungsschlüssel erzeugt ein APK-Set.
+Runner: `tests/test-bundle-guards.ps1`. Keine Geräteaktion in diesen Prüfungen.
+Der Schlüssel bleibt lokal; bei Schlüsselwechsel muss der öffentliche
+Zertifikat-Fingerabdruck im Runner bewusst geprüft und angepasst werden.
+Keine Produktionssignierung oder Store-Veröffentlichung.
+
+## Frühere manuelle Build-Prüfung
+
 Der bestehende Java-Produktionscode lässt sich jetzt als **unsigniertes** AAB bauen.
 Kein Store-Upload erfolgt. Dies ist kein fertig geprüftes Play-Release.
 

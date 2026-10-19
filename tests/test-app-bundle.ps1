@@ -3,7 +3,7 @@ param(
     [Parameter(Mandatory=$true)][string]$BundleToolJar,
     [Parameter(Mandatory=$true)][string]$JavaHome,
     [Parameter(Mandatory=$true)][string]$TestKeyStorePath,
-    [Parameter(Mandatory=$true)][string]$PackageId,
+    [Parameter(Mandatory=$true)][ValidatePattern('^[a-zA-Z][a-zA-Z0-9_]*(\.[a-zA-Z][a-zA-Z0-9_]*)+$')][string]$PackageId,
     [Parameter(Mandatory=$true)][string]$OutputDirectory,
     [ValidatePattern('^emulator-[0-9]+$')][string]$Serial,
     [string]$AdbPath,
@@ -17,6 +17,14 @@ $java = Join-Path (Resolve-Path -LiteralPath $JavaHome).Path 'bin/java.exe'
 $BundlePath = (Resolve-Path -LiteralPath $BundlePath).Path
 $BundleToolJar = (Resolve-Path -LiteralPath $BundleToolJar).Path
 $TestKeyStorePath = (Resolve-Path -LiteralPath $TestKeyStorePath).Path
+# Pin the known local development certificate before signing anything. Its
+# fingerprint is public metadata; neither private key nor passwords are exported.
+$keytool = Join-Path (Resolve-Path -LiteralPath $JavaHome).Path 'bin/keytool.exe'
+$certificate = & $keytool '-J-Duser.language=en' -list -v -keystore $TestKeyStorePath -storepass android -alias androiddebugkey 2>&1
+$developmentFingerprint = 'DF:F1:D6:04:77:87:31:2C:A5:7E:78:A4:15:9D:A9:E5:3C:CE:C4:99:00:24:7F:4F:10:71:FE:5E:8C:A4:DA:57'
+if ($LASTEXITCODE -ne 0 -or ($certificate -join ' ') -notmatch [regex]::Escape("SHA256: $developmentFingerprint")) {
+    throw 'Only the pinned development test keystore is allowed. Never supply a production key.'
+}
 $OutputDirectory = [IO.Path]::GetFullPath($OutputDirectory)
 if (Test-Path -LiteralPath $OutputDirectory) { throw 'Choose a new output directory so previous evidence is preserved.' }
 if ($Serial -and !$AdbPath) { throw 'AdbPath is mandatory for an emulator check.' }
@@ -89,8 +97,9 @@ if ($Serial) {
         $uiPath = Join-Path $OutputDirectory 'ui.xml'
         Adb @('pull','/sdcard/codex-bundle-check.xml',$uiPath) | Out-Null
         [xml]$ui = Get-Content -LiteralPath $uiPath -Raw
-        $texts = @($ui.SelectNodes('//node') | ForEach-Object { $_.text }) -join ' '
-        $found = (!$ExpectedText -or $texts -match $ExpectedText)
+        $appNodes = @($ui.SelectNodes('//node') | Where-Object { $_.package -eq $PackageId })
+        $texts = @($appNodes | ForEach-Object { $_.text }) -join ' '
+        $found = ($appNodes.Count -gt 0 -and (!$ExpectedText -or $texts -match $ExpectedText))
     } while (!$found -and [DateTime]::UtcNow -lt $deadline)
     if (!$found) { throw "Expected UI content was not shown: $ExpectedText" }
     $appPid = (Adb @('shell','pidof',$PackageId) | Out-String).Trim()
