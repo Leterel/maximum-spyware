@@ -149,7 +149,7 @@ try {
         $xml=Dump 'handy-resume-complete'
         Check (Has $xml 'Ja, is Handy, Mois.') 'Handy completes scan after returning; inspect immediate screenshot for restarted animation'
     }
-    [ordered]@{testedAt=(Get-Date).ToString('o');serial=$Serial;api=(Adb @('shell','getprop','ro.build.version.sdk')).Trim();app=$App;apk=(Split-Path $ApkPath -Leaf);sha256=(Get-FileHash $ApkPath -Algorithm SHA256).Hash;checks=$script:checks;evidence=$script:evidence;lifecycleIncluded=($App -eq 'handy' -and !$SkipLifecycle);scope='Android emulator only; display configurations share one API-34 system image'} | ConvertTo-Json -Depth 4 | Set-Content (Join-Path $OutputDirectory "$App-results.json") -Encoding utf8
+    [ordered]@{testedAt=(Get-Date).ToString('o');serial=$Serial;api=(Adb @('shell','getprop','ro.build.version.sdk')).Trim();app=$App;apk=(Split-Path $ApkPath -Leaf);sha256=(Get-FileHash $ApkPath -Algorithm SHA256).Hash;checks=$script:checks;evidence=$script:evidence;lifecycleIncluded=($App -eq 'handy' -and !$SkipLifecycle);scope='Android emulator only; display configurations share one system image; actual version is recorded in api'} | ConvertTo-Json -Depth 4 | Set-Content (Join-Path $OutputDirectory "$App-results.json") -Encoding utf8
 } finally {
     # Restore only this explicitly verified emulator, never use adb without -s.
     Adb @('shell','wm','fixed-to-user-rotation',$originalFixedRotation) | Out-Null
