@@ -2,9 +2,11 @@
 
 Satirical Android app parodying surveillance capitalism.
 
-**This app collects nothing.** All surveillance UI is fake/local.
+**The default offline build collects nothing.** All surveillance UI is fake/local.
+An optional, separately identified [Google test-ad profile](ADS-TEST.md) includes
+networked SDKs and UMP consent. It uses sample IDs and generates no revenue.
 
-## Milestone 0.2.1
+## Source version 0.2.2
 
 - Giant dystopian disclaimer screen
 - German disclosure and "OKAY, SPIONIER MICH FAKE AUS" button
@@ -26,7 +28,7 @@ From the project root on Windows:
 ./build-native.ps1 -SdkPath C:\Android\Sdk -JavaHome "C:\Program Files\Eclipse Adoptium\jdk-21"
 ```
 
-APK output: `build/outputs/maximum-spyware-0.2.1.apk` (the deliverable copy is
+APK output: `build/outputs/maximum-spyware-0.2.2.apk` (the deliverable copy is
 in `outputs/maximum-spyware/`).
 
 ## Requirements
@@ -43,6 +45,10 @@ signature and alignment. See [PROGRESS.md](PROGRESS.md) for the actual test scop
 
 [Download APK](https://github.com/Leterel/maximum-spyware/releases/tag/v0.2.1)
 (public repository).
+
+The linked release remains 0.2.1. Source 0.2.2 targets API 36, increments
+versionCode to 4, and adds the optional test-ad profile; no new release is
+published automatically by the build.
 
 Copy `maximum-spyware-0.2.1.apk` to an Android 8.0+ device and open it. Allow
 installation from your file manager if Android asks. Launch **MAXIMUM SPYWARE**,

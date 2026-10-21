@@ -1,11 +1,13 @@
-# Werbeintegration — geplant, noch nicht implementiert
+# Werbeintegration — optionales Testprofil implementiert
 
-Der aktuelle Build enthält kein Werbe-SDK und keine Consent-Integration.
-Geplant: klar gekennzeichnete Anzeige im fertigen Ergebnis-/Berichtbereich.
-Kein Werbeaufruf beim Beenden oder außerhalb der App. Vor Umsetzung aktuelle
-Google-Play-/AdMob-Vorgaben prüfen; eine Store-Zulassung ist nicht zugesichert.
+Der normale Build bleibt offline ohne Werbe-/Consent-SDKs. Das separate
+`.adstest`-Profil integriert GMA Next-Gen 1.5.0 und UMP 4.0.0 mit offiziellen
+Testkennungen. Banner erst am fertigen Ergebnis, Consent vor SDK-Initialisierung
+und Anzeigenanfrage, erreichbare erforderliche Privacy Options, keine
+Start-/Exit-Interstitials. Anleitung: [ADS-TEST.md](ADS-TEST.md).
 
-Offen: AdMob-Einrichtung, SDK und Consent, Betreiber-/Datenschutzangaben,
-Data-Safety-Erklärung, signiertes und geprüftes Play-Paket. AdMob-IDs sind
-öffentliche Kennungen; private Schlüssel und Zugangsdaten bleiben außerhalb von Git.
-Android-Tests ausschließlich im Emulator.
+Produktiv offen: eigene AdMob-/Betreiberkonfiguration und Privacy-Nachrichten,
+Datenschutz-/Data-Safety-Angaben, Produktionssignatur und Store-Veröffentlichung.
+Keine Produktivanzeigen oder Einnahmen. Die Sample-App-ID ersetzt keine eigene
+Consent-Konfiguration; bei Formular-/Netzfehlern gibt es keine Anzeigenanfrage.
+Android-Tests nur im Emulator. Private Schlüssel bleiben außerhalb von Git.

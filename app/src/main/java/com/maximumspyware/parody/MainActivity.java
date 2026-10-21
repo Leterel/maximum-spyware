@@ -1,4 +1,5 @@
 package com.maximumspyware.parody;
+import de.leterel.ads.AdsHook;
 
 import android.app.Activity;
 import android.graphics.Canvas;
@@ -29,6 +30,8 @@ public final class MainActivity extends Activity {
     private final Handler handler = new Handler(Looper.getMainLooper());
     private FakeScanState state = new FakeScanState();
     private Dashboard dashboard;
+    private AdsHook ads;
+    private boolean resumed;
 
     @Override public void onCreate(Bundle saved) {
         super.onCreate(saved);
@@ -47,14 +50,17 @@ public final class MainActivity extends Activity {
         setContentView(view);
     }
     @Override protected void onResume() {
-        super.onResume(); state.resume(SystemClock.elapsedRealtime());
+        super.onResume(); resumed = true; state.resume(SystemClock.elapsedRealtime());
+        if (ads != null) ads.resume();
         if (dashboard != null) dashboard.refresh();
     }
     @Override protected void onPause() {
+        resumed = false;
+        if (ads != null) ads.pause();
         state.suspend(SystemClock.elapsedRealtime()); handler.removeCallbacksAndMessages(null);
         super.onPause();
     }
-    @Override protected void onDestroy() { handler.removeCallbacksAndMessages(null); super.onDestroy(); }
+    @Override protected void onDestroy() { if (ads != null) ads.destroy(); handler.removeCallbacksAndMessages(null); super.onDestroy(); }
     @Override protected void onSaveInstanceState(Bundle out) {
         state.advance(SystemClock.elapsedRealtime());
         out.putBoolean("dashboard", dashboard != null); out.putInt("elapsed", state.elapsedMs());
@@ -70,13 +76,13 @@ public final class MainActivity extends Activity {
         addHeight(root,new RadarView(),24,170);
         LinearLayout card = panel(); add(root,card,20);
         add(card,text("Alles Show. Wirklich alles.",20,LIME,true),0);
-        add(card,text("Diese Spaß-App simuliert Überwachung. Jeder Fund ist ausgedacht. Sie liest keine persönlichen Daten und greift weder auf Kamera, Mikrofon, Standort noch Internet zu.",16,PAPER,false),14);
-        add(card,text("KEIN INTERNET · KEINE TRACKER · KEINE BERECHTIGUNGEN",11,MUTED,true),14);
+        add(card,text(AdsHook.ENABLED ? "Diese Spaß-App simuliert Überwachung. Jeder Fund ist ausgedacht. Der Scan liest keine persönlichen Daten. Dieses Testprofil enthält Google-Testwerbung mit Internetzugriff nach Datenschutzprüfung." : "Diese Spaß-App simuliert Überwachung. Jeder Fund ist ausgedacht. Sie liest keine persönlichen Daten und greift weder auf Kamera, Mikrofon, Standort noch Internet zu.",16,PAPER,false),14);
+        add(card,text(AdsHook.ENABLED ? "TESTWERBEPROFIL · KEINE ECHTE SPIONAGE" : "KEIN INTERNET · KEINE TRACKER · KEINE BERECHTIGUNGEN",11,MUTED,true),14);
         Button enter = button("OKAY, SPIONIER MICH FAKE AUS →"); enter.setOnClickListener(v -> { state = new FakeScanState(); state.resume(SystemClock.elapsedRealtime()); showDashboard(); }); add(root,enter,24);
-        add(root,text("NULL DATEN. MAXIMALES THEATER.",11,MUTED,true),22);
+        add(root,text(AdsHook.ENABLED ? "SCAN OHNE DATEN. TESTWERBUNG SEPARAT." : "NULL DATEN. MAXIMALES THEATER.",11,MUTED,true),22);
         display(scroll);
     }
-    private void showDashboard() { dashboard = new Dashboard(); display(dashboard); dashboard.refresh(); }
+    private void showDashboard() { dashboard = new Dashboard(); display(dashboard); if (resumed) ads.resume(); dashboard.refresh(); }
 
     private final class Dashboard extends ScrollView {
         private final TextView progress, stage, terminal, drama, session;
@@ -102,7 +108,7 @@ public final class MainActivity extends Activity {
             progress=text("0%",25,LIME,true); progress.setGravity(Gravity.END); add(scan,progress,8);
             add(scan,text("IMAGINÄRER TIEFENSCAN",10,MUTED,true),5);
             LinearLayout metrics=stack ? column() : row();
-            LinearLayout dataBox=metric("ECHTE DATEN","0"), uploadBox=metric("UPLOAD","0 B");
+            LinearLayout dataBox=metric("ECHTE SCAN-DATEN","0"), uploadBox=metric(AdsHook.ENABLED ? "SCAN-UPLOAD" : "UPLOAD","0 B");
             LinearLayout dramaBox=panel(); add(dramaBox,text("DRAMA",9,MUTED,true),0); drama=text("0%",23,LIME,true); add(dramaBox,drama,9);
             if (stack) { add(metrics,dataBox,0); add(metrics,uploadBox,8); add(metrics,dramaBox,8); }
             else { weighted(metrics,dataBox,0); weighted(metrics,uploadBox,8); weighted(metrics,dramaBox,8); }
@@ -111,7 +117,8 @@ public final class MainActivity extends Activity {
             report=button("MEINEN FAKE-BERICHT ANSEHEN →"); report.setOnClickListener(v -> { state.showReport(); refresh(); smoothScrollTo(0,0); }); add(root,report,18);
             pause=button("PAUSE"); pause.setOnClickListener(v -> { state.togglePause(SystemClock.elapsedRealtime()); refresh(); }); add(root,pause,12);
             Button again=button("NEUER SCAN"); again.setOnClickListener(v -> { state.restart(SystemClock.elapsedRealtime()); refresh(); smoothScrollTo(0,0); }); add(root,again,10);
-            add(root,text("Alle Meldungen sind erfunden. Es werden keine Daten gelesen oder übertragen.\n\nNULL DATEN. MAXIMALES THEATER.",11,MUTED,false),20);
+            add(root,text(AdsHook.ENABLED ? "Alle Scanmeldungen sind erfunden. Der Scan liest und überträgt keine Daten. Google-Testwerbung verwendet Internetzugriff erst nach Datenschutzprüfung. Keine produktiven Anzeigen, keine Einnahmen." : "Alle Meldungen sind erfunden. Es werden keine Daten gelesen oder übertragen.\n\nNULL DATEN. MAXIMALES THEATER.",11,MUTED,false),20);
+            ads = new AdsHook(MainActivity.this, root);
         }
         void refresh() {
             handler.removeCallbacks(tick);
@@ -128,6 +135,7 @@ public final class MainActivity extends Activity {
             }
             report.setVisibility(state.complete()&&!state.report()?VISIBLE:GONE);
             pause.setVisibility(state.complete()||state.report()?GONE:VISIBLE); pause.setText(state.paused()?"WEITER":"PAUSE");
+            ads.result(state.report());
             if(state.running()) handler.postDelayed(tick,50);
         }
     }

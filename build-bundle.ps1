@@ -36,7 +36,7 @@ try {
     $env:ANDROID_SDK_ROOT = $SdkPath
     $env:GRADLE_USER_HOME = $GradleCache
     $env:ANDROID_USER_HOME = $AndroidUserHome
-    $gradleArguments = @('--no-daemon', "-Pandroid.aapt2FromMavenOverride=$aapt", 'bundleRelease')
+    $gradleArguments = @('--no-daemon', '-PadsTest=false', "-Pandroid.aapt2FromMavenOverride=$aapt", 'bundleRelease')
     if (!$Online) { $gradleArguments = @('--offline') + $gradleArguments }
     Push-Location $project
     try {

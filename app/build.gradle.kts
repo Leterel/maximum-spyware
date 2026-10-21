@@ -1,19 +1,26 @@
 plugins {
     id("com.android.application")
 }
+val adsTest = providers.gradleProperty("adsTest").map { it.toBooleanStrict() }.getOrElse(false)
 
 android {
     namespace = "com.maximumspyware.parody"
-    compileSdk = 35
-    buildToolsVersion = "35.0.0"
+    compileSdk = 36
+    buildToolsVersion = "36.0.0"
 
     defaultConfig {
         applicationId = "com.maximumspyware.parody"
         minSdk = 26
-        targetSdk = 35
-        versionCode = 3
-        versionName = "0.2.1"
+        targetSdk = 36
+        versionCode = 4
+        versionName = "0.2.2"
+        if (adsTest) { applicationIdSuffix = ".adstest"; versionNameSuffix = "-adstest" }
 
+    }
+    sourceSets.getByName("main").java.srcDir(if (adsTest) "src/adsTest/java" else "src/offline/java")
+    if (adsTest) {
+        sourceSets.getByName("debug").manifest.srcFile("src/adsTest/AndroidManifest.xml")
+        sourceSets.getByName("release").manifest.srcFile("src/adsTest/AndroidManifest.xml")
     }
 
     signingConfigs {
@@ -44,4 +51,8 @@ android {
 }
 
 dependencies {
+    if (adsTest) {
+        implementation("com.google.android.libraries.ads.mobile.sdk:ads-mobile-sdk:1.5.0")
+        implementation("com.google.android.ump:user-messaging-platform:4.0.0")
+    }
 }

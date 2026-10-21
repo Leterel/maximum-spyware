@@ -107,3 +107,39 @@ der getestete Build kompiliert bewusst die dependency-freie Java-Variante, damit
 er ohne Online-Gradle-Abhängigkeiten funktioniert. Vollständige Gerätetests, insbesondere
 Hersteller-Lebenszyklusverhalten und Bedienung mit großer Schrift, stehen noch aus.
 Der lokale Entwicklungsschlüssel bleibt aus Git ausgeschlossen.
+
+## 20.10.2026 — Android-Werkzeugkette und Upload-Signierung
+
+Gradle 8.11.1 (offizielle SHA-256 im Wrapper) und AGP 8.10.1 eingesetzt;
+unsigned AAB neu gebaut und mit bundletool 1.18.3 validiert. AGP unterstützt
+API 36; die frühere Warnung durch AGP 8.7.3 entfällt. Bestehende APKs erhalten.
+Separates tools/sign-bundle.mjs mit echter jarsigner- und Zertifikatsprüfung
+ergänzt; alle drei Signierregressionen mit echtem AAB und isoliertem temporärem
+RSA-3072-Testschlüssel bestanden. Debugalias, bereits signierter Input, ungültiges
+Bundle und vorhandene Ausgabe werden abgewiesen. Keine Produktionsschlüssel
+erzeugt oder übertragen, kein Play-Upload. Anleitung: SIGNING.md.
+
+## 21.10.2026 — Optionales Google-Testwerbeprofil, Offlineprofil erhalten
+
+Eigenes .adstest-Profil mit GMA Next-Gen 1.5.0 und UMP 4.0.0 implementiert;
+ausschließlich offizielle Sample-App-/Banner-IDs. Banner erst nach Ergebnis bzw.
+im geöffneten Fake-Bericht, keine Start-/Exit-Interstitials. Consent-Gate vor
+SDK-/WorkManager-Initialisierung und Anzeigenanfragen, erforderliche Privacy
+Options, begrenzte Netzwerkprüfung, sichere Pause-/Destroy-/Late-Callback-Pfade.
+Telefonstatus, Advertising-ID und AdServices-Rechte sowie automatische
+ContentProvider explizit aus dem Testmanifest entfernt und beim Export geprüft.
+Google-SDK bedeutet weiterhin Netzwerk-/Metadatenverarbeitung, kein Null-Daten-
+Versprechen für dieses Profil. Die normale Offline-APK bleibt SDK-/permissionfrei.
+
+Beide Profile erfolgreich kompiliert: ads-test-20261021-3 sowie manueller
+Offlinebuild. Unsigned Baseline-AAB mit -PadsTest=false offline gebaut und
+bundletool-validiert. 18 reine Consent-/Lifecycle-Gatechecks bestanden;
+produktspezifische Offline-Logiktests ebenfalls bestanden. Keine physischen
+Geräte verwendet. Eine echte UMP-Formular-/Bannerlieferung wird daraus nicht
+abgeleitet: Googles Sample-App-ID ersetzt keine eigene AdMob-Konfiguration.
+Buildpfade, Bedienung und Grenzen: ADS-TEST.md. Emulator-QA getrennt dokumentieren.
+
+Maximum Spyware zusätzlich konsistent auf compile/target API 36, Buildtools36,
+versionCode4 und Version0.2.2 aktualisiert (Gradle, Manifest, manueller APK-Dateiname).
+3797 Scan-Statechecks bestanden. Baseline-AAB hat target36 und keinerlei
+uses-permission; APK-Signatur V2/V3 und Alignment bestanden.
