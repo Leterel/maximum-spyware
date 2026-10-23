@@ -78,3 +78,18 @@ kein physisches Handy verwendet.
 Quellen: [GMA-Setup](https://developers.google.com/admob/android/next-gen/quick-start),
 [Banner und Test-ID](https://developers.google.com/admob/android/next-gen/banner),
 [UMP und Privacy Options](https://developers.google.com/admob/android/privacy).
+
+## 23.10.2026 — reproduzierbare Emulatorprüfung
+
+`tests/emulator-ads-failclosed.ps1` prüft das Google-Testprofil mit expliziter
+Emulatorseriennummer, festem APK-SHA256 und erwarteter Android-API. Vor jedem
+ADB-Schritt muss ro.kernel.qemu=1 sein. Ein vorhandenes Belegverzeichnis wird
+nicht überschrieben. Rotationszustand wird anschließend wiederhergestellt.
+
+Die aktuellen APKs bestehen auf API 34 und API 36: keine Werbung vor dem
+Ergebnis/Report, benutzbares Ergebnis bei UMP-Fehler, erneuter Versuch,
+Hintergrund/Rückkehr, Rotation und lebender App-Prozess ohne PID-bezogene
+Fatal Exception. Die API-36-Läufe wurden am 22.10.2026 abgeschlossen.
+Dies prüft ausdrücklich den Fehlerpfad der Sample-Konfiguration. Erfolgreiche
+Consentformulare, Bannerlieferung, Einnahmen und Netzwerkverkehrsmessung sind
+nicht nachgewiesen. Belege liegen im Chat unter outputs/android-ads-tests.
