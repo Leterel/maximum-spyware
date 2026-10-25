@@ -43,14 +43,14 @@ signature and alignment. See [PROGRESS.md](PROGRESS.md) for the actual test scop
 
 ## Install and use
 
-[Download APK](https://github.com/Leterel/maximum-spyware/releases/tag/v0.2.1)
+[Download APK](https://github.com/Leterel/maximum-spyware/releases/tag/v0.2.2)
 (public repository).
 
-The linked release remains 0.2.1. Source 0.2.2 targets API 36, increments
-versionCode to 4, and adds the optional test-ad profile; no new release is
-published automatically by the build.
+Release 0.2.2 targets API 36 and increments versionCode to 4. The downloadable
+APK is the offline version. Source also includes the separate Google test-ad
+profile; it is not a production advertising or revenue setup.
 
-Copy `maximum-spyware-0.2.1.apk` to an Android 8.0+ device and open it. Allow
+Copy `maximum-spyware-0.2.2.apk` to an Android 8.0+ device and open it. Allow
 installation from your file manager if Android asks. Launch **MAXIMUM SPYWARE**,
 read the simulation disclosure and tap the green button. The invented scan
 takes 22 seconds of foreground time. Pause freezes it; **NEUER SCAN** resets
